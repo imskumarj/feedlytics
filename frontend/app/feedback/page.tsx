@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiRequest } from "@/lib/api";
 
 export default function FeedbackPage() {
   const [form, setForm] = useState({
@@ -19,14 +20,10 @@ export default function FeedbackPage() {
     setSuccess("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/feedback`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
+      const res = await apiRequest("/v1/feedback", {
+        method: "POST",
+        body: JSON.stringify(form),
+    });
 
       if (!res.ok) throw new Error("Failed");
 

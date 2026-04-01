@@ -26,6 +26,24 @@ exports.handler = async (event) => {
       ipAddress: event.requestContext?.http?.sourceIp || "unknown"
     };
 
+    const RATE_LIMIT_SECONDS = 10;
+
+    // naive in-memory (upgrade later to DynamoDB TTL)
+    const ip = event.requestContext?.http?.sourceIp || "unknown";
+
+    if (!global.rateLimitStore) {
+    global.rateLimitStore = {};
+    }
+
+    const now = Date.now();
+    const lastRequest = global.rateLimitStore[ip];
+
+    if (lastRequest && now - lastRequest < RATE_LIMIT_SECONDS * 1000) {
+    return response(429, { error: "Too many requests" });
+    }
+
+    global.rateLimitStore[ip] = now;
+
     await ddb.send(
       new PutCommand({
         TableName: TABLE_NAME,
