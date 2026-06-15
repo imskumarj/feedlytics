@@ -1,8 +1,8 @@
-## 🧠 FEEDLYTICS - Serverless Feedback Platform
+## 🧠 FEEDLYTICS - Serverless Feedback Platform 
 
-A scalable, production-ready **serverless feedback collection and analytics system** built using AWS-native services.
+A scalable, production-ready **serverless feedback collection and analytics system** built using AWS-native services. 
 
-Designed to demonstrate real-world cloud architecture using **AWS Lambda, API Gateway, DynamoDB, and CloudWatch**.
+Designed to demonstrate real-world cloud architecture using **AWS Lambda, API Gateway, DynamoDB, and CloudWatch**. 
 
 ---
 
