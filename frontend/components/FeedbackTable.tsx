@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StarRating } from "@/components/StarRating";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
-import type { Feedback } from "@/lib/mock-data";
+import type { Feedback } from "@/types/feedback";
+import { FeedbackService } from "@/services/feedback";
 
 interface FeedbackTableProps {
   feedback: Feedback[];
@@ -25,17 +28,18 @@ export function FeedbackTable({ feedback }: FeedbackTableProps) {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  const exportCsv = () => {
-    const header = "Name,Email,Rating,Message,Date\n";
-    const rows = filtered.map((f) =>
-      `"${f.name}","${f.email}",${f.rating},"${f.message}","${new Date(f.createdAt).toLocaleDateString()}"`
-    ).join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
+  const exportCsv = async () => {
+    const blob = await FeedbackService.exportFeedbackCsv();
+
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
+
     a.href = url;
     a.download = "feedlytics-export.csv";
+
     a.click();
+
     URL.revokeObjectURL(url);
   };
 

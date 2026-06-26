@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { StarRating } from "@/components/StarRating";
 import { CheckCircle2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FeedbackService } from "@/services/feedback";
 
 interface FormData {
   name: string;
@@ -38,15 +41,38 @@ export default function FeedbackPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!validate()) return;
-    setLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
-    toast({ title: "Feedback submitted!", description: "Thank you for your feedback." });
+
+    try {
+      setLoading(true);
+
+      await FeedbackService.submitFeedback({
+        name: form.name || undefined,
+        email: form.email || undefined,
+        message: form.message,
+        rating: form.rating,
+      });
+
+      setSubmitted(true);
+
+      toast({
+        title: "Feedback submitted!",
+        description: "Thank you for your feedback.",
+      });
+    } catch (error) {
+      console.error(error);
+
+      toast({
+        title: "Submission failed",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {

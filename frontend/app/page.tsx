@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BarChart3, MessageSquare, Zap, Shield, ArrowRight } from "lucide-react";
 
@@ -28,10 +28,10 @@ export default function Landing() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg" className="gradient-primary border-0 text-primary-foreground shadow-lg shadow-primary/25 hover:opacity-90 px-8">
-              <Link to="/feedback">Give Feedback <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/feedback">Give Feedback <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="px-8">
-              <Link to="/dashboard">View Dashboard</Link>
+              <Link href="/dashboard">View Dashboard</Link>
             </Button>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function Landing() {
           <h2 className="text-3xl font-bold">Ready to get started?</h2>
           <p className="mt-3 opacity-80">Start collecting feedback in under 5 minutes. No credit card required.</p>
           <Button asChild size="lg" className="mt-8 bg-card text-foreground hover:bg-card/90 px-8">
-            <Link to="/feedback">Start Collecting Feedback</Link>
+            <Link href="/feedback">Start Collecting Feedback</Link>
           </Button>
         </div>
       </section>

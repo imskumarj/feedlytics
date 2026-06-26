@@ -1,19 +1,25 @@
 import "./globals.css";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+import { Navbar } from "@/components/Navbar";
+
+export const metadata: Metadata = {
   title: "Feedlytics",
   description: "Serverless Feedback Intelligence Platform",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900">
-        <main className="min-h-screen flex flex-col items-center justify-center">
+      <body>
+        <Navbar />
+
+        <main className="min-h-screen bg-background">
           {children}
         </main>
       </body>
