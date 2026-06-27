@@ -40,22 +40,24 @@ export default async function DashboardPage() {
   const hasFeedback = dashboard.feedback.length > 0;
 
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Dashboard
-        </h1>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Dashboard
+          </h1>
 
-        <p className="mt-1 text-muted-foreground">
-          Overview of your products and feedback
-        </p>
+          <p className="mt-1 text-muted-foreground">
+            Overview of your products and feedback
+          </p>
+        </div>
+
+        <Button asChild>
+          <Link href="/dashboard/products">
+            Manage Products
+          </Link>
+        </Button>
       </div>
-
-      <Button asChild>
-        <Link href="/dashboard/products">
-          Manage Products
-        </Link>
-      </Button>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard

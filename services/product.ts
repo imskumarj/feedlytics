@@ -51,4 +51,20 @@ export class ProductService {
   static async getProducts() {
     return MOCK_PRODUCTS;
   }
+
+  static async getProductBySlug(
+  slug: string
+) {
+  const products =
+    await this.getProducts();
+
+  return (
+    products.find(
+      (product) =>
+        product.slug === slug
+    ) ?? null
+  );
+}
+
+
 }
