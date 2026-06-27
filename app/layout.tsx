@@ -4,24 +4,31 @@ import type { Metadata } from "next";
 
 import { Navbar } from "@/components/Navbar";
 
+import {
+  AuthProvider,
+} from "@/contexts/AuthContext";
+
 export const metadata: Metadata = {
   title: "Feedlytics",
-  description: "Serverless Feedback Intelligence Platform",
+  description:
+    "Serverless Feedback Intelligence Platform",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body>
-        <Navbar />
+        <AuthProvider>
+          <Navbar />
 
-        <main className="min-h-screen bg-background">
-          {children}
-        </main>
+          <main className="min-h-screen bg-background">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );

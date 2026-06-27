@@ -19,6 +19,7 @@ interface FormData {
 }
 
 interface FormErrors {
+  name?: string;
   message?: string;
   rating?: string;
   email?: string;
@@ -33,6 +34,7 @@ export default function FeedbackPage() {
 
   const validate = (): boolean => {
     const errs: FormErrors = {};
+    if (form.name.length > 100) errs.name = "Name must be under 100 characters.";
     if (!form.message.trim()) errs.message = "Message is required.";
     else if (form.message.length > 1000) errs.message = "Message must be under 1000 characters.";
     if (form.rating === 0) errs.rating = "Please select a rating.";
@@ -50,9 +52,9 @@ export default function FeedbackPage() {
       setLoading(true);
 
       await FeedbackService.submitFeedback({
-        name: form.name || undefined,
-        email: form.email || undefined,
-        message: form.message,
+        name: form.name.trim() || undefined,
+        email: form.email.trim() || undefined,
+        message: form.message.trim(),
         rating: form.rating,
       });
 
@@ -63,14 +65,17 @@ export default function FeedbackPage() {
         description: "Thank you for your feedback.",
       });
     } catch (error) {
-      console.error(error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Please try again later.";
 
-      toast({
-        title: "Submission failed",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
+        toast({
+          title: "Submission failed",
+          description: message,
+          variant: "destructive",
+        });
+      } finally {
       setLoading(false);
     }
   };
@@ -85,7 +90,7 @@ export default function FeedbackPage() {
             </div>
             <h2 className="text-2xl font-bold">Thank you!</h2>
             <p className="mt-2 text-muted-foreground">Your feedback has been recorded and will help us improve.</p>
-            <Button className="mt-8" variant="outline" onClick={() => { setSubmitted(false); setForm({ name: "", email: "", message: "", rating: 0 }); }}>
+            <Button className="mt-8" variant="outline" onClick={() => { setSubmitted(false); setForm({ name: "", email: "", message: "", rating: 0 }); setErrors({});}}>
               Submit Another
             </Button>
           </CardContent>
@@ -105,25 +110,72 @@ export default function FeedbackPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name">Name <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                <Input id="name" placeholder="John Doe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} />
+                <Label htmlFor="name">
+                  Name <span className="text-muted-foreground text-xs">(optional)</span>
+                </Label>
+
+                <Input
+                  id="name"
+                  placeholder="John Doe"
+                  value={form.name}
+                  onChange={(e) => {
+                    setForm({ ...form, name: e.target.value });
+
+                    if (errors.name) {
+                      setErrors({
+                        ...errors,
+                        name: undefined,
+                      });
+                    }
+                  }}
+                  maxLength={100}
+                />
+
+                {errors.name && (
+                  <p className="text-xs text-destructive">
+                    {errors.name}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                <Input id="email" type="email" placeholder="john@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} maxLength={255} />
+                <Input id="email" type="email" placeholder="john@example.com" value={form.email} onChange={(e) => {
+                  setForm({ ...form, email: e.target.value });
+
+                  if (errors.email) {
+                    setErrors({
+                      ...errors,
+                      email: undefined,
+                    });
+                  }
+                }} maxLength={255} />
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Rating <span className="text-destructive">*</span></Label>
-              <StarRating value={form.rating} onChange={(v) => { setForm({ ...form, rating: v }); setErrors({ ...errors, rating: undefined }); }} size="lg" />
+              <StarRating value={form.rating} onChange={(v) => { setForm({ ...form, rating: v }); 
+                setErrors((prev) => ({
+                  ...prev,
+                  rating: undefined,
+                })); 
+              }} size="lg" />
               {errors.rating && <p className="text-xs text-destructive">{errors.rating}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="message">Message <span className="text-destructive">*</span></Label>
-              <Textarea id="message" placeholder="Tell us what you think..." rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={1000} />
+              <Textarea id="message" placeholder="Tell us what you think..." rows={4} value={form.message} onChange={(e) => {
+                setForm({ ...form, message: e.target.value });
+
+                if (errors.message) {
+                  setErrors({
+                    ...errors,
+                    message: undefined,
+                  });
+                }
+              }} maxLength={1000} />
               <div className="flex justify-between">
                 {errors.message ? <p className="text-xs text-destructive">{errors.message}</p> : <span />}
                 <p className="text-xs text-muted-foreground">{form.message.length}/1000</p>

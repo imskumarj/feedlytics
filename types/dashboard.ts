@@ -6,6 +6,10 @@ export interface DashboardResponse {
   uniqueUsers: number;
   fiveStarPercentage: number;
 
+  feedbackTrend: number;
+  ratingTrend: number;
+  fiveStarTrend: number;
+
   ratingDistribution: Record<number, number>;
 
   feedback: Feedback[];
