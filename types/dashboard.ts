@@ -1,6 +1,7 @@
 import { Feedback } from "./feedback";
 
 export interface DashboardResponse {
+  totalProducts: number;
   totalFeedback: number;
   averageRating: number;
   uniqueUsers: number;

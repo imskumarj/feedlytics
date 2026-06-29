@@ -72,7 +72,7 @@ export default async function DashboardPage() {
 
         <StatsCard
           title="Average Rating"
-          value={`${dashboard.averageRating} / 5`}
+          value={`${dashboard.averageRating.toFixed(1)} / 5`}
           icon={Star}
           trend={{
             value: dashboard.ratingTrend,
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
 
         <StatsCard
           title="5-Star Rate"
-          value={`${dashboard.fiveStarPercentage}%`}
+          value={`${dashboard.fiveStarPercentage.toFixed(1)}%`}
           icon={TrendingUp}
           trend={{
             value: dashboard.fiveStarTrend,
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
 
         <StatsCard
           title="Products"
-          value={4}
+          value={dashboard.totalProducts}
           icon={Package}
           subtitle="Active products"
         />
@@ -107,7 +107,9 @@ export default async function DashboardPage() {
 
       <div className="mb-8">
         <RatingChart
-          distribution={dashboard.ratingDistribution}
+          distribution={
+            dashboard.ratingDistribution ?? {}
+          }
         />
       </div>
 

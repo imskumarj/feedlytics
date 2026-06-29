@@ -61,7 +61,7 @@ export function Navbar() {
 
     {
       href: "/dashboard/products",
-      label: "Products",
+      label: "Your Products",
       icon: Package,
       visible: isOwner,
     },

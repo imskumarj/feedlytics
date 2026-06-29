@@ -57,10 +57,11 @@ export default function AuthPage() {
 
     if (user.role === "admin") {
       router.replace("/admin");
-      return;
+    } else if (
+      user.role === "owner"
+    ) {
+      router.replace("/dashboard");
     }
-
-    router.replace("/dashboard");
   }, [isAuthenticated, user, router]);
 
   const handleLogin = async (
@@ -70,6 +71,37 @@ export default function AuthPage() {
 
     try {
       setLoading(true);
+
+      if (!loginData.email.trim()) {
+        toast({
+          title: "Email Required",
+          variant: "destructive",
+        });
+
+        return;
+      }
+
+      if (!loginData.password.trim()) {
+        toast({
+          title: "Password Required",
+          variant: "destructive",
+        });
+
+        return;
+      }
+
+      if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+          loginData.email
+        )
+      ) {
+        toast({
+          title: "Invalid Email",
+          variant: "destructive",
+        });
+
+        return;
+      }
 
       await login(
         loginData.email,
@@ -99,6 +131,59 @@ export default function AuthPage() {
     e: React.FormEvent
   ) => {
     e.preventDefault();
+
+    if (!registerData.name.trim()) {
+      toast({
+        title: "Name Required",
+        variant: "destructive",
+      });
+
+      return;
+    }
+
+    if (!registerData.email.trim()) {
+      toast({
+        title: "Email Required",
+        variant: "destructive",
+      });
+
+      return;
+    }
+
+    if (!registerData.password.trim()) {
+      toast({
+        title: "Password Required",
+        variant: "destructive",
+      });
+
+      return;
+    }
+
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        registerData.email
+      )
+    ) {
+      toast({
+        title: "Invalid Email",
+        variant: "destructive",
+      });
+
+      return;
+    }
+
+    if (
+      registerData.password.length < 8
+    ) {
+      toast({
+        title: "Weak Password",
+        description:
+          "Password must contain at least 8 characters.",
+        variant: "destructive",
+      });
+
+      return;
+    }
 
     if (
       registerData.password !==
@@ -146,6 +231,14 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4 py-12">
@@ -235,24 +328,6 @@ export default function AuthPage() {
                     "Login"
                   )}
                 </Button>
-
-                <div className="rounded-md border p-3 text-xs text-muted-foreground">
-                  <p className="font-medium">
-                    Demo Accounts
-                  </p>
-
-                  <p>
-                    Admin:
-                    admin@feedlytics.com
-                  </p>
-
-                  <p>
-                    Owner:
-                    owner@feedlytics.com
-                  </p>
-
-                  <p>Password: anything</p>
-                </div>
               </form>
             </TabsContent>
 

@@ -64,4 +64,22 @@ export class FeedbackService {
 
     return response.json();
   }
+
+  static async exportFeedbackCsv(): Promise<Blob> {
+    const response =
+      await apiFetch(
+        "/feedback/export",
+        {
+          method: "GET",
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to export feedback."
+      );
+    }
+
+    return response.blob();
+  }
 }

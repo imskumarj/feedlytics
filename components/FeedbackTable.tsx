@@ -94,7 +94,14 @@ export function FeedbackTable({ feedback }: FeedbackTableProps) {
         </div>
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+            {filtered.length === 0
+              ? "No feedback found"
+              : `Showing ${
+                  page * PAGE_SIZE + 1
+                }–${Math.min(
+                  (page + 1) * PAGE_SIZE,
+                  filtered.length
+                )} of ${filtered.length}`}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>

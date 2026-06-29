@@ -28,7 +28,7 @@ export default function Landing() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg" className="gradient-primary border-0 text-primary-foreground shadow-lg shadow-primary/25 hover:opacity-90 px-8">
-              <Link href="/feedback">Give Feedback <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/products">Give Feedback <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="px-8">
               <Link href="/dashboard">View Dashboard</Link>
@@ -64,7 +64,7 @@ export default function Landing() {
           <h2 className="text-3xl font-bold">Ready to get started?</h2>
           <p className="mt-3 opacity-80">Start collecting feedback in under 5 minutes. No credit card required.</p>
           <Button asChild size="lg" className="mt-8 bg-card text-foreground hover:bg-card/90 px-8">
-            <Link href="/feedback">Start Collecting Feedback</Link>
+            <Link href="/auth">Start Collecting Feedback</Link>
           </Button>
         </div>
       </section>

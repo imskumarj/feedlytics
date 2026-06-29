@@ -50,8 +50,21 @@ import { Product } from "@/types/product";
 
 import { ProductService } from "@/services/product";
 
+import { Loader2 } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] =
+    useState<Product[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const { toast } = useToast();
 
   const [open, setOpen] = useState(false);
 
@@ -70,10 +83,27 @@ export default function ProductsPage() {
   }, []);
 
   const loadProducts = async () => {
-    const data =
-      await ProductService.getProducts();
+    try {
+      setLoading(true);
 
-    setProducts(data);
+      const data =
+        await ProductService.getProducts();
+
+      setProducts(data);
+    } catch {
+      toast({
+        title:
+          "Failed To Load Products",
+
+        description:
+          "Please try again later.",
+
+        variant:
+          "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -108,82 +138,160 @@ export default function ProductsPage() {
     setOpen(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !form.name.trim() ||
-      !form.description.trim()
+      !form.description.trim() ||
+      !form.category.trim()
     ) {
+      toast({
+        title:
+          "Missing Information",
+
+        description:
+          "Please fill all fields.",
+
+        variant:
+          "destructive",
+      });
+
       return;
     }
 
-    if (editingProduct) {
+    try {
+      setSaving(true);
+
+      if (editingProduct) {
+        const updated =
+          await ProductService.updateProduct(
+            editingProduct.productId,
+            form
+          );
+
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.productId ===
+            updated.productId
+              ? updated
+              : p
+          )
+        );
+
+        toast({
+          title:
+            "Product Updated",
+        });
+      } else {
+        const created =
+          await ProductService.createProduct(
+            form
+          );
+
+        setProducts((prev) => [
+          created,
+          ...prev,
+        ]);
+
+        toast({
+          title:
+            "Product Created",
+        });
+      }
+
+      setOpen(false);
+
+      resetForm();
+    } catch {
+      toast({
+        title:
+          "Operation Failed",
+
+        description:
+          "Please try again later.",
+
+        variant:
+          "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteProduct = async (
+    id: string
+  ) => {
+    try {
+      await ProductService.deleteProduct(
+        id
+      );
+
+      setProducts((prev) =>
+        prev.filter(
+          (p) => p.productId !== id
+        )
+      );
+
+      toast({
+        title:
+          "Product Deleted",
+      });
+    } catch {
+      toast({
+        title:
+          "Delete Failed",
+
+        variant:
+          "destructive",
+      });
+    }
+  };
+
+  const toggleProduct = async (
+    product: Product
+  ) => {
+    try {
+      const updated =
+        await ProductService.updateProduct(
+          product.productId,
+          {
+            isActive:
+              !product.isActive,
+          }
+        );
+
       setProducts((prev) =>
         prev.map((p) =>
           p.productId ===
-          editingProduct.productId
-            ? {
-                ...p,
-                ...form,
-              }
+          updated.productId
+            ? updated
             : p
         )
       );
-    } else {
-      const newProduct: Product = {
-        productId: crypto.randomUUID(),
 
-        ownerId: "2",
+      toast({
+        title:
+          updated.isActive
+            ? "Product Enabled"
+            : "Product Disabled",
+      });
+    } catch {
+      toast({
+        title:
+          "Update Failed",
 
-        slug: form.name
-          .toLowerCase()
-          .replaceAll(" ", "-"),
-
-        totalFeedback: 0,
-
-        averageRating: 0,
-
-        createdAt:
-          new Date().toISOString(),
-
-        ...form,
-      };
-
-      setProducts((prev) => [
-        newProduct,
-        ...prev,
-      ]);
+        variant:
+          "destructive",
+      });
     }
-
-    setOpen(false);
-
-    resetForm();
   };
 
-  const deleteProduct = (
-    id: string
-  ) => {
-    setProducts((prev) =>
-      prev.filter(
-        (p) => p.productId !== id
-      )
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
     );
-  };
-
-  const toggleProduct = (
-    id: string
-  ) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.productId === id
-          ? {
-              ...p,
-              isActive:
-                !p.isActive,
-            }
-          : p
-      )
-    );
-  };
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -304,20 +412,38 @@ export default function ProductsPage() {
 
             <DialogFooter>
               <Button
-                onClick={
-                  handleSubmit
-                }
+                onClick={handleSubmit}
+                disabled={saving}
               >
-                {editingProduct
-                  ? "Save Changes"
-                  : "Create Product"}
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : editingProduct ? (
+                  "Save Changes"
+                ) : (
+                  "Create Product"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {products.length === 0 ? (
+        <div className="rounded-lg border p-10 text-center">
+          <h2 className="text-xl font-semibold">
+            No Products Found
+          </h2>
+
+          <p className="mt-2 text-muted-foreground">
+            Create your first product to
+            start collecting feedback.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {products.map(
           (product) => (
             <Card
@@ -357,7 +483,7 @@ export default function ProductsPage() {
                     <DropdownMenuItem
                       onClick={() =>
                         toggleProduct(
-                          product.productId
+                          product
                         )
                       }
                     >
@@ -401,11 +527,7 @@ export default function ProductsPage() {
 
                   <div className="flex items-center gap-2 text-sm">
                     <Star className="h-4 w-4" />
-
-                    {
-                      product.averageRating
-                    }
-                    /5
+                    {product.averageRating.toFixed(1)}/5
                   </div>
 
                   <div className="flex items-center gap-2 text-sm">
@@ -435,6 +557,7 @@ export default function ProductsPage() {
           )
         )}
       </div>
+      )}
     </div>
   );
 }
