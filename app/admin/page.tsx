@@ -27,8 +27,8 @@ import {
 } from "@/components/auth/ProtectedRoute";
 
 import {
-  AuthService,
-} from "@/services/auth";
+  AdminService,
+} from "@/services/admin";
 
 import {
   OwnerRegistration,
@@ -49,41 +49,132 @@ export default function AdminPage() {
     OwnerRegistration[]
   >([]);
 
-  const loadOwners = () => {
-    setPendingOwners(
-      AuthService.getPendingOwners()
+  const [loading, setLoading] =
+    useState(true);
+
+  const [processingId, setProcessingId] =
+    useState<string | null>(
+      null
     );
+
+  const loadOwners = async () => {
+    try {
+      setLoading(true);
+
+      const owners =
+        await AdminService.getPendingOwners();
+
+      setPendingOwners(
+        owners
+      );
+    } catch {
+      toast({
+        title:
+          "Failed To Load Owners",
+
+        variant:
+          "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    loadOwners();
+    void loadOwners();
   }, []);
 
-  const approveOwner = (
+  const approveOwner =
+    async (
+      id: string
+    ) => {
+      try {
+        setProcessingId(id);
+
+        await AdminService.approveOwner(
+          id
+        );
+
+        setPendingOwners(
+          (prev) =>
+            prev.filter(
+              (
+                owner
+              ) =>
+                owner.id !==
+                id
+            )
+        );
+
+        toast({
+          title:
+            "Owner Approved",
+        });
+      } catch {
+        toast({
+          title:
+            "Approval Failed",
+
+          variant:
+            "destructive",
+        });
+      } finally {
+        setProcessingId(
+          null
+        );
+      }
+    };
+
+  const rejectOwner =
+  async (
     id: string
   ) => {
-    AuthService.approveOwner(id);
+    try {
+      setProcessingId(id);
 
-    loadOwners();
+      await AdminService.rejectOwner(
+        id
+      );
 
-    toast({
-      title:
-        "Owner Approved",
-    });
+      setPendingOwners(
+        (prev) =>
+          prev.filter(
+            (
+              owner
+            ) =>
+              owner.id !==
+              id
+          )
+      );
+
+      toast({
+        title:
+          "Owner Rejected",
+      });
+    } catch {
+      toast({
+        title:
+          "Rejection Failed",
+
+        variant:
+          "destructive",
+      });
+    } finally {
+      setProcessingId(
+        null
+      );
+    }
   };
 
-  const rejectOwner = (
-    id: string
-  ) => {
-    AuthService.rejectOwner(id);
-
-    loadOwners();
-
-    toast({
-      title:
-        "Owner Rejected",
-    });
-  };
+  if (loading) {
+    return (
+      <ProtectedRoute role="admin">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          Loading...
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute role="admin">
@@ -139,6 +230,10 @@ export default function AdminPage() {
 
                       <div className="flex gap-2">
                         <Button
+                          disabled={
+                            processingId ===
+                            owner.id
+                          }
                           onClick={() =>
                             approveOwner(
                               owner.id
@@ -152,6 +247,10 @@ export default function AdminPage() {
 
                         <Button
                           variant="destructive"
+                          disabled={
+                            processingId ===
+                            owner.id
+                          }
                           onClick={() =>
                             rejectOwner(
                               owner.id
