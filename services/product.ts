@@ -1,70 +1,118 @@
 // services/product.ts
 
+import { apiFetch } from "@/lib/api";
+
 import { Product } from "@/types/product";
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    productId: "1",
-    ownerId: "2",
-
-    name: "Feedlytics Website",
-    slug: "feedlytics-website",
-
-    description:
-      "Official customer feedback portal.",
-
-    category: "SaaS",
-
-    isActive: true,
-
-    totalFeedback: 48,
-
-    averageRating: 4.7,
-
-    createdAt: "2026-01-10",
-  },
-
-  {
-    productId: "2",
-    ownerId: "2",
-
-    name: "Mobile App",
-
-    slug: "mobile-app",
-
-    description:
-      "Customer mobile application.",
-
-    category: "Mobile",
-
-    isActive: true,
-
-    totalFeedback: 21,
-
-    averageRating: 4.3,
-
-    createdAt: "2026-03-20",
-  },
-];
-
 export class ProductService {
-  static async getProducts() {
-    return MOCK_PRODUCTS;
+  static async getProducts(): Promise<Product[]> {
+    const response =
+      await apiFetch(
+        "/products",
+        {
+          cache: "no-store",
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch products."
+      );
+    }
+
+    return response.json();
   }
 
   static async getProductBySlug(
-  slug: string
-) {
-  const products =
-    await this.getProducts();
+    slug: string
+  ): Promise<Product | null> {
+    const response =
+      await apiFetch(
+        `/products/${slug}`,
+        {
+          cache: "no-store",
+        }
+      );
 
-  return (
-    products.find(
-      (product) =>
-        product.slug === slug
-    ) ?? null
-  );
-}
+    if (
+      response.status === 404
+    ) {
+      return null;
+    }
 
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch product."
+      );
+    }
 
+    return response.json();
+  }
+
+  static async createProduct(
+    data: Partial<Product>
+  ): Promise<Product> {
+    const response =
+      await apiFetch(
+        "/products",
+        {
+          method: "POST",
+
+          body: JSON.stringify(
+            data
+          ),
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to create product."
+      );
+    }
+
+    return response.json();
+  }
+
+  static async updateProduct(
+    id: string,
+    data: Partial<Product>
+  ): Promise<Product> {
+    const response =
+      await apiFetch(
+        `/products/${id}`,
+        {
+          method: "PUT",
+
+          body: JSON.stringify(
+            data
+          ),
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to update product."
+      );
+    }
+
+    return response.json();
+  }
+
+  static async deleteProduct(
+    id: string
+  ): Promise<void> {
+    const response =
+      await apiFetch(
+        `/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to delete product."
+      );
+    }
+  }
 }

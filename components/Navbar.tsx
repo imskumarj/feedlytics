@@ -46,8 +46,8 @@ export function Navbar() {
     },
 
     {
-      href: "/feedback",
-      label: "Feedback",
+      href: "/products",
+      label: "Products List",
       icon: MessageSquare,
       visible: true,
     },

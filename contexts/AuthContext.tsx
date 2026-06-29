@@ -32,12 +32,19 @@ export function AuthProvider({
     useState(true);
 
   useEffect(() => {
-    const currentUser =
-      AuthService.getCurrentUser();
+    const initialize =
+      async () => {
+        try {
+          const currentUser =
+            await AuthService.getCurrentUser();
 
-    setUser(currentUser);
+          setUser(currentUser);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    setLoading(false);
+    initialize();
   }, []);
 
   const login = async (

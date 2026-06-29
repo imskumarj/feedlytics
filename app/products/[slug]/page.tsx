@@ -19,36 +19,61 @@ import {
 } from "@/components/ui/card";
 
 import { ProductService } from "@/services/product";
+import { Product } from "@/types/product";
 
 import {
+  ProductFeedback,
   ProductFeedbackService,
 } from "@/services/product-feedback";
 
 interface Props {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 }
 
 export default async function ProductPage({
   params,
 }: Props) {
-  const { slug } =
-    await params;
+  const { slug } = params;
 
-  const product =
-    await ProductService.getProductBySlug(
-      slug
+  let product: Product | null = null;
+
+  try {
+    product =
+      await ProductService.getProductBySlug(
+        slug
+      );
+  } catch {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">
+            Unable to Load Product
+          </h2>
+
+          <p className="mt-2 text-muted-foreground">
+            Please try again later.
+          </p>
+        </div>
+      </div>
     );
+  }
 
   if (!product) {
     notFound();
   }
 
-  const feedback =
-    await ProductFeedbackService.getFeedbackForProduct(
-      product.productId
-    );
+  let feedback: ProductFeedback[] = [];
+
+  try {
+    feedback =
+      await ProductFeedbackService.getFeedbackForProduct(
+        product.productId
+      );
+  } catch {
+    feedback = [];
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -115,10 +140,7 @@ export default async function ProductPage({
                 </p>
 
                 <p className="text-2xl font-bold">
-                  {
-                    product.averageRating
-                  }
-                  /5
+                  {product.averageRating.toFixed(1)}/5
                 </p>
               </div>
             </div>
@@ -207,10 +229,9 @@ export default async function ProductPage({
 
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Calendar className="mr-1 h-4 w-4" />
-
-                        {
-                          item.createdAt
-                        }
+                          {new Date(
+                            item.createdAt
+                          ).toLocaleDateString()}
                       </div>
                     </div>
 

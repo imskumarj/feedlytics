@@ -25,20 +25,29 @@ import { ProductService } from "@/services/product";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
-
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProducts = async () => {
-      const data =
-        await ProductService.getProducts();
+      try {
+        const data =
+          await ProductService.getProducts();
 
-      setProducts(
-        data.filter(
-          (product) =>
-            product.isActive
-        )
-      );
+        setProducts(
+          data.filter(
+            (product) =>
+              product.isActive
+          )
+        );
+      } catch {
+        setError(
+          "Failed to load products."
+        );
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadProducts();
@@ -62,6 +71,30 @@ export default function ProductsPage() {
             .includes(query)
       );
     }, [products, search]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        Loading products...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">
+            Unable to Load Products
+          </h2>
+
+          <p className="mt-2 text-muted-foreground">
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -145,11 +178,7 @@ export default function ProductsPage() {
 
                       <div className="flex items-center gap-2 text-sm">
                         <Star className="h-4 w-4" />
-
-                        {
-                          product.averageRating
-                        }
-                        /5
+                        {product.averageRating.toFixed(1)}/5
                       </div>
                     </div>
                   </CardContent>

@@ -31,6 +31,14 @@ import { Switch } from "@/components/ui/switch";
 
 import { useToast } from "@/hooks/use-toast";
 
+import { useEffect } from "react";
+
+import { Product } from "@/types/product";
+
+import { ProductService } from "@/services/product";
+
+import { FeedbackService } from "@/services/feedback";
+
 export default function ProductFeedbackPage() {
   const { slug } = useParams();
 
@@ -53,6 +61,41 @@ export default function ProductFeedbackPage() {
     email: "",
     message: "",
   });
+
+  const [product, setProduct] =
+    useState<Product | null>(null);
+
+  const [pageLoading, setPageLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const loadProduct =
+      async () => {
+        try {
+          const data =
+            await ProductService.getProductBySlug(
+              String(slug)
+            );
+
+          setProduct(data);
+        } catch {
+          toast({
+            title:
+              "Unable to Load Product",
+
+            description:
+              "Please try again later.",
+
+            variant:
+              "destructive",
+          });
+        } finally {
+          setPageLoading(false);
+        }
+      };
+
+    loadProduct();
+  }, [slug, toast]);
 
   const submitFeedback = async (
     e: React.FormEvent
@@ -81,19 +124,86 @@ export default function ProductFeedbackPage() {
       return;
     }
 
+    if (!anonymous) {
+      if (!form.name.trim()) {
+        toast({
+          title:
+            "Name Required",
+
+          description:
+            "Please enter your name.",
+
+          variant:
+            "destructive",
+        });
+
+        return;
+      }
+
+      if (!form.email.trim()) {
+        toast({
+          title:
+            "Email Required",
+
+          description:
+            "Please enter your email.",
+
+          variant:
+            "destructive",
+        });
+
+        return;
+      }
+    }
+
+    if (
+      !anonymous &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        form.email
+      )
+    ) {
+      toast({
+        title:
+          "Invalid Email",
+
+        description:
+          "Please enter a valid email.",
+
+        variant:
+          "destructive",
+      });
+
+      return;
+    }
+
     try {
       setLoading(true);
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1200)
-      );
+      if (!product) {
+        return;
+      }
 
-      console.log({
-        slug,
-        rating,
-        anonymous,
-        ...form,
-      });
+      await FeedbackService.submitFeedback(
+        {
+          productId:
+            product.productId,
+
+          rating,
+
+          anonymous,
+
+          name: anonymous
+            ? undefined
+            : form.name,
+
+          email: anonymous
+            ? undefined
+            : form.email,
+
+          message:
+            form.message,
+        }
+      );
 
       setSubmitted(true);
     } catch {
@@ -107,6 +217,30 @@ export default function ProductFeedbackPage() {
       setLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">
+            Product Not Found
+          </h2>
+
+          <p className="mt-2 text-muted-foreground">
+            This product does not exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -165,13 +299,15 @@ export default function ProductFeedbackPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl">
-            Share Your Feedback
+            {product.name}
           </CardTitle>
 
           <CardDescription>
-            Tell us about your experience.
-            Your insights help improve the
-            product for everyone.
+            Share your feedback about{" "}
+            <strong>
+              {product.name}
+            </strong>
+            .
           </CardDescription>
         </CardHeader>
 

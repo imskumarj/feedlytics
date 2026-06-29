@@ -1,5 +1,11 @@
+// services/product-feedback.ts
+
+import { apiFetch } from "@/lib/api";
+
 export interface ProductFeedback {
   feedbackId: string;
+
+  productId: string;
 
   name: string;
 
@@ -10,39 +16,24 @@ export interface ProductFeedback {
   createdAt: string;
 }
 
-const MOCK_FEEDBACK: ProductFeedback[] = [
-  {
-    feedbackId: "1",
-    name: "Rahul",
-    rating: 5,
-    message:
-      "Amazing experience. Very easy to use.",
-    createdAt: "2026-06-01",
-  },
-
-  {
-    feedbackId: "2",
-    name: "Priya",
-    rating: 4,
-    message:
-      "Great platform with clean UI.",
-    createdAt: "2026-06-08",
-  },
-
-  {
-    feedbackId: "3",
-    name: "Anonymous",
-    rating: 5,
-    message:
-      "Would definitely recommend.",
-    createdAt: "2026-06-10",
-  },
-];
-
 export class ProductFeedbackService {
   static async getFeedbackForProduct(
     productId: string
-  ) {
-    return MOCK_FEEDBACK;
+  ): Promise<ProductFeedback[]> {
+    const response =
+      await apiFetch(
+        `/products/${productId}/feedback`,
+        {
+          cache: "no-store",
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch product feedback."
+      );
+    }
+
+    return response.json();
   }
 }
